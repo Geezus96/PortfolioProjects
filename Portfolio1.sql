@@ -1,4 +1,10 @@
--- Data that will be used 
+/*
+Covid - 19 Data Exploration
+
+Skills utilized: Joins, CTE's Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
+
+*/
+-- Observing intitial Data exploration 
 SELECT Continent, Location, Date, Total_cases, new_cases, Total_deaths, population
 FROM CovidDeaths
 ORDER BY [location], [date]
@@ -48,7 +54,9 @@ SELECT SUM(new_cases) AS Total_cases, SUM(new_deaths) AS Total_deaths, SUM(new_d
 FROM CovidDeaths
 ORDER BY 1, 2
 
--- I am going to look at the total population vs the vaccinations bewteen two different tables 
+-- I am going to look at the total population vs the vaccinations bewteen two different tables
+-- Total Population vs Vaccinations
+-- Population that has recieved at least one dose of the vaccine
 SELECT Deaths.Continent, Deaths.location, Deaths.DATE, Deaths.population, Vaccinations.new_vaccinations,
     SUM(Cast(Vaccinations.new_vaccinations AS bigint)) OVER (partition by deaths.location ORDER BY Deaths.Location, Deaths.Date) AS Rolling_Vaccinations
 FROM CovidDeaths AS Deaths
@@ -57,7 +65,7 @@ JOIN CovidVaccinations AS Vaccinations
 WHERE Deaths.continent is not NULL
 ORDER BY [location], [date]
 
--- CTE
+-- CTE to preform calculation on partition by in the previous query
 WITH PopulationVsVaccinations (Continent, Location, Date, Population, new_vaccinations, Rolling_Vaccinations)  
 AS 
 (
@@ -72,7 +80,7 @@ ORDER BY [location], [date]
 SELECT *, (Rolling_Vaccinations/Population)*100
 FROM PopulationVsVaccinations
 
--- Temp Table
+-- Temp Table to preform calculation on partition byin the previous query
 DROP Table IF EXISTS #PercentPopulationVaccinated
 CREATE TABLE #PercentPopulationVaccinated
 (
@@ -95,4 +103,11 @@ ORDER BY [location], [date]
 SELECT *, (Rolling_Vaccinations/Population)*100
 FROM #PercentPopulationVaccinated
 
-
+-- Creating a view to store data for a visualization
+Create View PercentPopulationVaccinated AS
+SELECT Deaths.Continent, Deaths.location, Deaths.DATE, Deaths.population, Vaccinations.new_vaccinations,
+    SUM(Vaccinations.new_vaccinations) OVER (partition by deaths.location ORDER BY Deaths.Location, Deaths.Date) AS Rolling_Vaccinations
+FROM CovidDeaths AS Deaths
+JOIN CovidVaccinations AS Vaccinations
+    ON Deaths.[location] = Vaccinations.[location] and Deaths.[date] = Vaccinations.[date]  
+WHERE Deaths.continent is not NULL
