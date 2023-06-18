@@ -1,10 +1,12 @@
 /*
 Covid - 19 Data Exploration
 
+Data Was Downloaded via the website Ourworldindata.org COVID-19 DATA EXPLORER
+
 Skills utilized: Joins, CTE's Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
 
 */
--- Observing intitial Data exploration 
+-- Observing initial Data Exploration 
 SELECT Continent, Location, Date, Total_cases, new_cases, Total_deaths, population
 FROM CovidDeaths
 ORDER BY [location], [date]
